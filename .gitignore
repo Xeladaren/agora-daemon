@@ -35,3 +35,7 @@
 agora-deamon
 *sublime-*
 Makefile
+
+.qmake.stash
+
+moc_*
