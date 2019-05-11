@@ -202,12 +202,39 @@ void TestCrash::run()
 	while(1)
 	{	
 		char command[200] ;
+		memset(command, '\0', 200);
 
-		scanf("%s", command);
+		int i = 0 ;
+		while(i < 200-1 )
+		{
+
+			char c = getchar() ;
+
+			if (c != '\n')
+			{
+				command[i] = c ;
+			}
+			else
+			{
+				command[i] = '\0' ;
+				break;
+			}
+
+			i++;
+			
+		}
+
+		if (i == 0)
+		{
+			continue ;
+		}
+
+		//scanf("%s", command);
+		//gets(command);
 
 		QString string = command ;
 		
-		//qDebug() << "command : " << string ;
+		qDebug() << i << ") command : " << string ;
 
 		if (string == "!stop-daemon")
 		{
