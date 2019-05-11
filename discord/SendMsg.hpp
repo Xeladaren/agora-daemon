@@ -4,8 +4,12 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 
-class SendMsg
+#include <QObject>
+
+class SendMsg : public QObject
 {
+
+	Q_OBJECT
 
 	public :
 
@@ -14,11 +18,10 @@ class SendMsg
 	private :
 
 		QNetworkAccessManager nam ;
-
 		QNetworkReply * reply ;
 
 	public slots :
 
-		void replyFinish() ;
+		void replyFinished(void) ;
 	
 };

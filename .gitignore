@@ -39,3 +39,10 @@ Makefile
 .qmake.stash
 
 moc_*
+
+server/Agora/
+server/backup
+server/logs
+server/banned-*
+server/usercache.json
+server/whiteliste.json
