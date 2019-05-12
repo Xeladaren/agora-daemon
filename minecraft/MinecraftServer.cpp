@@ -1,7 +1,5 @@
 
-#include "minecraft/TestCrash.hpp"
-
-#include "discord/SendMsg.hpp"
+#include "minecraft/MinecraftServer.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +7,7 @@
 
 #include <QDebug>
 
-TestCrash::TestCrash()
+MinecraftServer::MinecraftServer()
 {
 
 	this->nextBackup = QDateTime::currentDateTime() ;
@@ -39,12 +37,12 @@ TestCrash::TestCrash()
 
 
 
-TestCrash::~TestCrash()
+MinecraftServer::~MinecraftServer()
 {
 
 }
 
-void TestCrash::startMinecraft() 
+void MinecraftServer::startMinecraft() 
 {
 
 	if (this->minecraftProcess != NULL)
@@ -79,7 +77,7 @@ void TestCrash::startMinecraft()
 	this->minecraftProcess->start() ;
 }
 
-void TestCrash::minecraftStateChange(QProcess::ProcessState newState)
+void MinecraftServer::minecraftStateChange(QProcess::ProcessState newState)
 {
 	//qDebug() << newState ;
 	//qDebug() << this->minecraftProcess->exitStatus() ;
@@ -87,30 +85,27 @@ void TestCrash::minecraftStateChange(QProcess::ProcessState newState)
 	if (newState == QProcess::NotRunning )
 	{
 
+		this->minecraftStarted = false ;
+
 		if (reboot)
 		{
-			if (this->makeBackup)
-			{
-				runBackup() ;
-			}
 
 			startMinecraft() ;
 		}
 		else
 		{
 			qDebug("EXIT");
-			exit(0) ;
 		}
 		
 	}
 }
 
-void TestCrash::minecraftErrorOccurred(QProcess::ProcessError error) 
+void MinecraftServer::minecraftErrorOccurred(QProcess::ProcessError error) 
 {
 	qDebug() << "error : " << error ;
 }
 
-void TestCrash::minecraftReadyRead()
+void MinecraftServer::minecraftReadyRead()
 {
 
 	QTextStream out(stdout) ;
@@ -121,18 +116,28 @@ void TestCrash::minecraftReadyRead()
 
 	QString string = readOut ;
 
+	if (string.contains("[Server thread/INFO]: Done"))
+	{
+		qDebug() << "minecraft Started !!" ;
+		this->minecraftStarted = true ;
+	}
+
 	out << string << '\n' ;
 }
 
-void TestCrash::minecraftWrite(QString cmd)
+void MinecraftServer::minecraftWrite(QString cmd)
 {
 	//qDebug() << "test " << cmd ;
-	QByteArray data = cmd.toLocal8Bit() ;
-	data.append('\n');
-	this->minecraftProcess->write(data);
+	if (this->minecraftStarted)
+	{
+		QByteArray data = cmd.toLocal8Bit() ;
+		data.append('\n');
+		this->minecraftProcess->write(data);
+	}
+
 }
 
-void TestCrash::checkBackup() 
+void MinecraftServer::checkBackup() 
 {
 	
 	if (this->nextBackup < QDateTime::currentDateTime() )
@@ -147,7 +152,7 @@ void TestCrash::checkBackup()
 	}
 }
 
-void TestCrash::runBackup()
+void MinecraftServer::runBackup()
 {
 	QProcess backupProcess ;
 
@@ -156,16 +161,23 @@ void TestCrash::runBackup()
 
 	qDebug() << "start backup" ;
 
+	emit minecraftSendCmd("say Debut de backup");
+	emit minecraftSendCmd("save-all");
+	emit minecraftSendCmd("save-off");
+
 	backupProcess.start() ;
 
 	backupProcess.waitForFinished(5*60*1000);
+
+	emit minecraftSendCmd("save-on");
+	emit minecraftSendCmd("say Fin de backup");
 
 	qDebug() << "backup finich" ;
 
 	this->makeBackup = false ;
 }
 
-void TestCrash::stopDelay()
+void MinecraftServer::stopDelay()
 {
 	emit minecraftSendCmd("say Arret du serveur dans 1 min.");
 	sleep(30) ;
@@ -194,18 +206,19 @@ void TestCrash::stopDelay()
 	emit minecraftSendCmd("say Arret du serveur ...");
 }
 
-void TestCrash::run()
+void MinecraftServer::run()
 {	
 
 	//SendMsg * sendMsgObj = new SendMsg() ;
 
 	while(1)
 	{	
-		char command[200] ;
-		memset(command, '\0', 200);
+		int maxSize = 200 ;
+		char command[maxSize] ;
+		memset(command, '\0', maxSize);
 
 		int i = 0 ;
-		while(i < 200-1 )
+		while(i < maxSize-1 )
 		{
 
 			char c = getchar() ;
@@ -229,30 +242,38 @@ void TestCrash::run()
 			continue ;
 		}
 
-		//scanf("%s", command);
-		//gets(command);
-
 		QString string = command ;
 		
 		qDebug() << i << ") command : " << string ;
 
-		if (string == "!stop-daemon")
+		if (string.startsWith("!"))
 		{
-			qDebug() << "STOP DAEMON" ;
-			stopDelay();
-			emit minecraftSendCmd("stop");
-			reboot = false ;
-		}
-		else if (string == "!backup")
-		{
-			makeBackup = true ;
-			stopDelay();
-			emit minecraftSendCmd("stop");
+			qDebug() << "Daemon command" ;
+
+			if (string.startsWith("!stop-daemon"))
+			{
+				if (!string.contains("now"))
+				{
+					stopDelay();
+				}
+
+				qDebug() << "STOP DAEMON" ;
+			
+				emit minecraftSendCmd("stop");
+				reboot = false ;
+			}
+
+			else if (string.startsWith("!backup"))
+			{
+
+				qDebug() << "RUN BACKUP" ;
+
+				runBackup() ;
+			}
 		}
 		else
 		{
 			emit minecraftSendCmd(string) ;
-			//this->minecraftProcess->write()
 		}
 
 	}

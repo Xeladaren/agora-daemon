@@ -7,15 +7,15 @@
 #include <QTimer>
 #include <QDateTime>
 
-class TestCrash : public QThread
+class MinecraftServer : public QThread
 {
 
 	Q_OBJECT
 
 	public :
 
-		TestCrash() ;
-		~TestCrash() ;
+		MinecraftServer() ;
+		~MinecraftServer() ;
 
 	public slots :
 
@@ -44,6 +44,8 @@ class TestCrash : public QThread
 		bool reboot = true ;
 
 		bool makeBackup = false ;
+
+		bool minecraftStarted = false ;
 
 		QTimer * backupTimer ;
 

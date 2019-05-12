@@ -16,12 +16,15 @@ CONFIG += c++11
 # Input
 SOURCES += 	\
 			main.cpp \
+			Main.cpp \
 			\
-			minecraft/TestCrash.cpp \
+			minecraft/MinecraftServer.cpp \
 			\
-			discord/SendMsg.cpp \
+			discord/DiscordAPI.cpp \
 
-HEADERS += \
-			minecraft/TestCrash.hpp \
+HEADERS +=  \
+			Main.hpp \
 			\
-			discord/SendMsg.hpp \
+			minecraft/MinecraftServer.hpp \
+			\
+			discord/DiscordAPI.hpp \
