@@ -23,33 +23,24 @@ DiscordAPI::DiscordAPI()
 void DiscordAPI::postNewMsg(QString msg)
 {
 
-	qDebug() << "MSG : " << msg ;
-
-	QJsonDocument postData ;
+	QJsonDocument data ;
 	QJsonObject root ;
 
 	root.insert("content", QJsonValue(msg)) ;
-	postData.setObject(root);
+	data.setObject(root);
 
-	QUrl requestUrl("https://google.com") ;
+	qDebug() << data ;
 
-	//requestUrl.setPath("/api/1.0/data/z_data_5c938a5e40687c16523675c1/") ;
-
-	qDebug() << "URL : " << msg ;
+	QUrl requestUrl("https://discordapp.com/api/channels/525047514919993344/messages") ;
 
 	QNetworkRequest request(requestUrl) ;
 
 	QString authorizationHeader = "Bot NTI1MDQxNzA4MjU0MzYzNjcz.Dvw4tg.HdZ-BkSw__JJwcgeHFcMZNZ1ko0";
 
-	//request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-	//request.setRawHeader(QByteArray("Authorization"), authorizationHeader.toLocal8Bit()) ;
+	request.setRawHeader(QByteArray("Authorization"), authorizationHeader.toLocal8Bit()) ;
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-	
-
-	qDebug() << postData.toJson() ;
-
-	//this->reply = this->nam.post(request, string.toLocal8Bit());
-	this->sendReply = nam.get(request);
+	this->sendReply = nam.post(request, data.toJson()) ;
 
 	connect(this->sendReply, SIGNAL(finished()), this, SLOT(sendReplyFinished(void)));
 
@@ -83,7 +74,10 @@ void DiscordAPI::getNewMsg()
 
 void DiscordAPI::sendReplyFinished(void)
 {
-	qDebug() << "send Reply finish" ;
+	if (this->sendReply->error())
+	{
+		qDebug() << this->sendReply->error() ;
+	}
 }
 
 void DiscordAPI::reciveReplyFinished(void) 

@@ -122,6 +122,26 @@ void MinecraftServer::minecraftReadyRead()
 		this->minecraftStarted = true ;
 	}
 
+	else if (string.contains("[Server thread/INFO]: <"))
+	{
+		
+		/*
+		int startPseudo = string.indexOf('<');
+		int endPseudo = string.indexOf('>');
+		int sizePseudo = endPseudo - startPseudo - 1 ;
+
+		qDebug() << "player pseudo : " << string.mid(startPseudo+1, sizePseudo) ;
+
+		*/
+
+		QString msg = string.mid(string.indexOf('<'));
+
+		emit playerMsg(msg) ;
+
+		qDebug() << "player msg : " << msg ;
+
+	}
+
 	out << string << '\n' ;
 }
 

@@ -17,9 +17,9 @@ class DiscordAPI : public QObject
 
 		DiscordAPI();
 
-		void postNewMsg(QString msg) ;
-
 	public slots :
+
+		void postNewMsg(QString msg) ;
 
 		void getNewMsg();
 

@@ -28,6 +28,8 @@ class MinecraftServer : public QThread
 
 	signals :
 
+		void playerMsg(QString msg);
+
 		void minecraftSendCmd(QString cmd);
 
 	private :

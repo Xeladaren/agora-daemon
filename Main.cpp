@@ -2,11 +2,16 @@
 
 Main::Main()
 {
+	#if 1
+
 	minecraftServer = new MinecraftServer() ;
+	minecraftServer->start();
+
+	#endif
 
 	discordAPI = new DiscordAPI() ;
 
-	minecraftServer->start();
+	connect(minecraftServer, SIGNAL(playerMsg(QString)), discordAPI, SLOT(postNewMsg(QString)));
 
 	connect(discordAPI, SIGNAL(sendMinecraftCmd(QString)), minecraftServer, SLOT(minecraftWrite(QString))) ;
 }
