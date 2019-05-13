@@ -32,6 +32,8 @@ MinecraftServer::MinecraftServer()
 	connect(	this, SIGNAL(minecraftSendCmd(QString)),
 				this, SLOT(minecraftWrite(QString)));
 
+	emit playerMsg("**Démarrage du serveur en cours ...**") ;
+
 	startMinecraft() ;	
 }	
 
@@ -90,6 +92,8 @@ void MinecraftServer::minecraftStateChange(QProcess::ProcessState newState)
 		if (reboot)
 		{
 
+			emit playerMsg("**Redémarrage du serveur en cours ...**") ;
+
 			startMinecraft() ;
 		}
 		else
@@ -119,6 +123,7 @@ void MinecraftServer::minecraftReadyRead()
 	if (string.contains("[Server thread/INFO]: Done"))
 	{
 		qDebug() << "minecraft Started !!" ;
+		emit playerMsg("**Serveur On**") ;
 		this->minecraftStarted = true ;
 	}
 
@@ -136,6 +141,40 @@ void MinecraftServer::minecraftReadyRead()
 		QString msgModel = "**%1** :%2";
 
 		QString msg = msgModel.arg(pseudo).arg(pmsg);
+
+		emit playerMsg(msg) ;
+
+	}
+	else if (string.contains("joined the game"))
+	{
+		int startPseudo = string.indexOf("INFO]:") + 6;
+		int endPseudo = string.indexOf("joined") - 1;
+		int sizePseudo = endPseudo - startPseudo - 1 ;
+
+		QString pseudo = string.mid(startPseudo+1, sizePseudo) ;
+
+		this->playerList.append(pseudo) ;
+
+		QString msgModel = "**%1 a rejoint le jeu.**";
+
+		QString msg = msgModel.arg(pseudo);
+
+		emit playerMsg(msg) ;
+
+	}
+	else if (string.contains("left the game"))
+	{
+		int startPseudo = string.indexOf("INFO]:") + 6;
+		int endPseudo = string.indexOf("left") - 1;
+		int sizePseudo = endPseudo - startPseudo - 1 ;
+
+		QString pseudo = string.mid(startPseudo+1, sizePseudo) ;
+
+		this->playerList.removeAll(pseudo) ;
+
+		QString msgModel = "**%1 a quitté le jeu**";
+
+		QString msg = msgModel.arg(pseudo);
 
 		emit playerMsg(msg) ;
 
@@ -277,6 +316,8 @@ void MinecraftServer::run()
 				}
 
 				qDebug() << "STOP DAEMON" ;
+
+				emit playerMsg("**Arrêt du serveur**") ;
 			
 				emit minecraftSendCmd("stop");
 				reboot = false ;

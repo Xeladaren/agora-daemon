@@ -52,5 +52,7 @@ class MinecraftServer : public QThread
 		QTimer * backupTimer ;
 
 		QDateTime nextBackup ;
+
+		QList<QString> playerList ; 
 	
 };
