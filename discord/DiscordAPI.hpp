@@ -4,6 +4,8 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 
+#include <QBuffer>
+
 #include <QTimer>
 
 #include <QObject>
@@ -29,6 +31,8 @@ class DiscordAPI : public QObject
 
 		void sendReplyFinished(void) ;
 
+		void pachReplyFinished(void) ;
+
 		void updatePlayerList(QList<QString> playerList) ;
 
 	signals :
@@ -49,5 +53,7 @@ class DiscordAPI : public QObject
 		QString lastMsgID ;
 
 		QList<QString> playerList ;
+
+		QBuffer * patchBufferData ;
 	
 };

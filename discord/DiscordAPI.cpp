@@ -41,9 +41,13 @@ void DiscordAPI::pachChanelTopic(QString topic)
 	request.setRawHeader(QByteArray("Authorization"), authorizationHeader.toLocal8Bit()) ;
 	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-	this->pachReply = nam.sendCustomRequest(request, "PATCH", data.toJson()) ;
+	patchBufferData = new QBuffer() ;
 
-	connect(this->pachReply, SIGNAL(finished()), this, SLOT(sendReplyFinished(void)));
+	patchBufferData->setData(data.toJson()) ;
+
+	this->pachReply = nam.sendCustomRequest(request, "PATCH", patchBufferData) ;
+
+	connect(this->pachReply, SIGNAL(finished()), this, SLOT(pachReplyFinished(void)));
 }
 
 void DiscordAPI::postNewMsg(QString msg)
@@ -102,6 +106,16 @@ void DiscordAPI::sendReplyFinished(void)
 	{
 		qDebug() << this->sendReply->error() ;
 	}
+}
+
+void DiscordAPI::pachReplyFinished(void) 
+{
+	if (this->pachReply->error())
+	{
+		qDebug() << this->pachReply->error() ;
+	}
+
+	delete(patchBufferData) ;
 }
 
 void DiscordAPI::updatePlayerList(QList<QString> playerList)
