@@ -11,9 +11,14 @@ Main::Main()
 
 	discordAPI = new DiscordAPI() ;
 
-	connect(minecraftServer, SIGNAL(playerMsg(QString)), discordAPI, SLOT(postNewMsg(QString)));
+	connect(minecraftServer, SIGNAL(playerMsg(QString)), 
+			discordAPI, SLOT(postNewMsg(QString)));
 
-	connect(discordAPI, SIGNAL(sendMinecraftCmd(QString)), minecraftServer, SLOT(minecraftWrite(QString))) ;
+	connect(minecraftServer, SIGNAL(updatePalyerList(QList<QString>)), 
+			discordAPI, SLOT(updatePlayerList(QList<QString>)));
+
+	connect(discordAPI, SIGNAL(sendMinecraftCmd(QString)), 
+			minecraftServer, SLOT(minecraftWrite(QString))) ;
 }
 
 Main::~Main()

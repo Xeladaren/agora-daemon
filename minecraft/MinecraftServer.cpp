@@ -124,6 +124,7 @@ void MinecraftServer::minecraftReadyRead()
 	{
 		qDebug() << "minecraft Started !!" ;
 		emit playerMsg("**Serveur On**") ;
+		emit updatePalyerList(this->playerList) ;
 		this->minecraftStarted = true ;
 	}
 
@@ -147,8 +148,8 @@ void MinecraftServer::minecraftReadyRead()
 	}
 	else if (string.contains("joined the game"))
 	{
-		int startPseudo = string.indexOf("INFO]:") + 6;
 		int endPseudo = string.indexOf("joined") - 1;
+		int startPseudo = string.lastIndexOf("INFO]:", endPseudo) + 6;
 		int sizePseudo = endPseudo - startPseudo - 1 ;
 
 		QString pseudo = string.mid(startPseudo+1, sizePseudo) ;
@@ -161,11 +162,13 @@ void MinecraftServer::minecraftReadyRead()
 
 		emit playerMsg(msg) ;
 
+		emit updatePalyerList(this->playerList) ;
+
 	}
 	else if (string.contains("left the game"))
 	{
-		int startPseudo = string.indexOf("INFO]:") + 6;
 		int endPseudo = string.indexOf("left") - 1;
+		int startPseudo = string.lastIndexOf("INFO]:", endPseudo) + 6;
 		int sizePseudo = endPseudo - startPseudo - 1 ;
 
 		QString pseudo = string.mid(startPseudo+1, sizePseudo) ;
@@ -177,6 +180,8 @@ void MinecraftServer::minecraftReadyRead()
 		QString msg = msgModel.arg(pseudo);
 
 		emit playerMsg(msg) ;
+
+		emit updatePalyerList(this->playerList) ;
 
 	}
 

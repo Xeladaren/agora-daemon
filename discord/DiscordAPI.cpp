@@ -20,6 +20,32 @@ DiscordAPI::DiscordAPI()
 			SLOT(getNewMsg(void)));
 }
 
+void DiscordAPI::pachChanelTopic(QString topic)
+{
+	QJsonDocument data ;
+	QJsonObject root ;
+
+	topic = topic + " | conseil: mettez ce salon en muet " ;
+
+	root.insert("topic", QJsonValue(topic)) ;
+	data.setObject(root);
+
+	qDebug() << data ;
+
+	QUrl requestUrl("https://discordapp.com/api/channels/525047514919993344") ;
+
+	QNetworkRequest request(requestUrl) ;
+
+	QString authorizationHeader = "Bot NTI1MDQxNzA4MjU0MzYzNjcz.Dvw4tg.HdZ-BkSw__JJwcgeHFcMZNZ1ko0";
+
+	request.setRawHeader(QByteArray("Authorization"), authorizationHeader.toLocal8Bit()) ;
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+	this->pachReply = nam.sendCustomRequest(request, "PATCH", data.toJson()) ;
+
+	connect(this->pachReply, SIGNAL(finished()), this, SLOT(sendReplyFinished(void)));
+}
+
 void DiscordAPI::postNewMsg(QString msg)
 {
 
@@ -28,8 +54,6 @@ void DiscordAPI::postNewMsg(QString msg)
 
 	root.insert("content", QJsonValue(msg)) ;
 	data.setObject(root);
-
-	qDebug() << data ;
 
 	QUrl requestUrl("https://discordapp.com/api/channels/525047514919993344/messages") ;
 
@@ -78,6 +102,24 @@ void DiscordAPI::sendReplyFinished(void)
 	{
 		qDebug() << this->sendReply->error() ;
 	}
+}
+
+void DiscordAPI::updatePlayerList(QList<QString> playerList)
+{
+	this->playerList = playerList ;
+
+	QString topic ;
+
+	if (this->playerList.count() < 2)
+	{
+		topic = QString("Joueur en ligne : %1 / 10").arg(this->playerList.count()) ;
+	}
+	else
+	{
+		topic = QString("Joueurs en ligne : %1 / 10").arg(this->playerList.count()) ;
+	}
+
+	this->pachChanelTopic(topic) ;
 }
 
 void DiscordAPI::reciveReplyFinished(void) 

@@ -17,6 +17,8 @@ class DiscordAPI : public QObject
 
 		DiscordAPI();
 
+		void pachChanelTopic(QString topic) ;
+
 	public slots :
 
 		void postNewMsg(QString msg) ;
@@ -26,6 +28,8 @@ class DiscordAPI : public QObject
 		void reciveReplyFinished(void) ;
 
 		void sendReplyFinished(void) ;
+
+		void updatePlayerList(QList<QString> playerList) ;
 
 	signals :
 
@@ -38,10 +42,12 @@ class DiscordAPI : public QObject
 		QNetworkReply * sendReply ;
 		QNetworkReply * reciveReply ;
 
+		QNetworkReply * pachReply ;
+
 		QTimer * getNewMsgTimer ;
 
 		QString lastMsgID ;
 
-
+		QList<QString> playerList ;
 	
 };

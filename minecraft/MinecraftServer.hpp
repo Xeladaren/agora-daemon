@@ -6,6 +6,7 @@
 #include <QSocketNotifier>
 #include <QTimer>
 #include <QDateTime>
+#include <QList>
 
 class MinecraftServer : public QThread
 {
@@ -27,6 +28,8 @@ class MinecraftServer : public QThread
 		void checkBackup() ;
 
 	signals :
+
+		void updatePalyerList(QList<QString> playerList) ;
 
 		void playerMsg(QString msg);
 
