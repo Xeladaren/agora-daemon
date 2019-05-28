@@ -14,6 +14,8 @@ DiscordAPI::DiscordAPI()
 	this->getNewMsgTimer->setInterval(1000) ;
 	this->getNewMsgTimer->start() ;
 
+	this->playerList.clear() ;
+
 	connect(this->getNewMsgTimer, 
 			SIGNAL(timeout()),
 			this,

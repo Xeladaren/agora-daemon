@@ -19,6 +19,8 @@ MinecraftServer::MinecraftServer()
 	this->reboot = true ;
 	this->makeBackup = false ;
 
+	this->playerList.clear() ;
+
 	this->backupTimer = new QTimer() ;
 
 	this->backupTimer->setInterval(60*1000) ;
@@ -46,6 +48,8 @@ MinecraftServer::~MinecraftServer()
 
 void MinecraftServer::startMinecraft() 
 {
+
+	this->playerList.clear() ;
 
 	if (this->minecraftProcess != NULL)
 	{
@@ -120,9 +124,12 @@ void MinecraftServer::minecraftReadyRead()
 
 	QString string = readOut ;
 
+	out << string << '\n' ;
+
 	if (string.contains("[Server thread/INFO]: Done"))
 	{
 		qDebug() << "minecraft Started !!" ;
+		this->playerList.clear() ;
 		emit playerMsg("**Serveur On**") ;
 		emit updatePalyerList(this->playerList) ;
 		this->minecraftStarted = true ;
@@ -132,18 +139,23 @@ void MinecraftServer::minecraftReadyRead()
 	{
 		
 		
-		int startPseudo = string.indexOf('<');
+		int startPseudo = string.indexOf('<') + 1;
 		int endPseudo = string.indexOf('>');
-		int sizePseudo = endPseudo - startPseudo - 1 ;
+		int sizePseudo = endPseudo - startPseudo ;
 
-		QString pseudo = string.mid(startPseudo+1, sizePseudo) ;
-		QString pmsg   = string.mid(endPseudo+1) ;
+		if (string.count() > (endPseudo+1))
+		{
 
-		QString msgModel = "**%1** :%2";
+			QString pseudo = string.mid(startPseudo, sizePseudo) ;
+			QString pmsg   = string.mid(endPseudo+1) ;
 
-		QString msg = msgModel.arg(pseudo).arg(pmsg);
+			QString msgModel = "**%1** :%2";
 
-		emit playerMsg(msg) ;
+			QString msg = msgModel.arg(pseudo).arg(pmsg);
+
+			emit playerMsg(msg) ;
+
+		}
 
 	}
 	else if (string.contains("joined the game"))
@@ -152,18 +164,25 @@ void MinecraftServer::minecraftReadyRead()
 		int startPseudo = string.lastIndexOf("INFO]:", endPseudo) + 6;
 		int sizePseudo = endPseudo - startPseudo - 1 ;
 
-		QString pseudo = string.mid(startPseudo+1, sizePseudo) ;
+		if (string.count() > (startPseudo+1+sizePseudo))
+		{
 
-		this->playerList.append(pseudo) ;
+			QString pseudo = string.mid(startPseudo+1, sizePseudo) ;
 
-		QString msgModel = "**%1 a rejoint le jeu.**";
+			this->playerList.append(pseudo) ;
 
-		QString msg = msgModel.arg(pseudo);
+			QString msgModel = "**%1 a rejoint le jeu.**";
 
-		emit playerMsg(msg) ;
+			QString msg = msgModel.arg(pseudo);
 
-		emit updatePalyerList(this->playerList) ;
+			emit playerMsg(msg) ;
 
+			emit updatePalyerList(this->playerList) ;
+		}
+		else
+		{
+			qDebug() << "Erreur de taille pour la connection" ;
+		}
 	}
 	else if (string.contains("left the game"))
 	{
@@ -171,21 +190,27 @@ void MinecraftServer::minecraftReadyRead()
 		int startPseudo = string.lastIndexOf("INFO]:", endPseudo) + 6;
 		int sizePseudo = endPseudo - startPseudo - 1 ;
 
-		QString pseudo = string.mid(startPseudo+1, sizePseudo) ;
+		if (string.count() > (startPseudo+1+sizePseudo))
+		{
+			QString pseudo = string.mid(startPseudo+1, sizePseudo) ;
 
-		this->playerList.removeAll(pseudo) ;
+			this->playerList.removeAll(pseudo) ;
 
-		QString msgModel = "**%1 a quitté le jeu**";
+			QString msgModel = "**%1 a quitté le jeu**";
 
-		QString msg = msgModel.arg(pseudo);
+			QString msg = msgModel.arg(pseudo);
 
-		emit playerMsg(msg) ;
+			emit playerMsg(msg) ;
 
-		emit updatePalyerList(this->playerList) ;
+			emit updatePalyerList(this->playerList) ;
+		}
+		else
+		{
+			qDebug() << "Erreur de taille pour la déconnection" ;
+		}
 
 	}
 
-	out << string << '\n' ;
 }
 
 void MinecraftServer::minecraftWrite(QString cmd)
