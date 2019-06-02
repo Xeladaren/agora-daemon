@@ -120,13 +120,25 @@ void MinecraftServer::minecraftReadyRead()
 
 	QByteArray readOut = this->minecraftProcess->readAll() ;
 
-	readOut.replace('\n', ' ');
+	QList<QByteArray> commandList = readOut.split('\n') ;
 
-	QString string = readOut ;
+	for (int i = 0; i < commandList.count(); ++i)
+	{
+		QString command = commandList.at(i) ;
 
-	out << string << '\n' ;
+		if (command != "")
+		{
+			out << command << '\n' ;
 
-	if (string.contains("[Server thread/INFO]: Done"))
+			this->decodeMinecraftConsole(command) ;
+		}
+	}
+}
+
+void MinecraftServer::decodeMinecraftConsole(QString command)
+{
+
+	if (command.contains("[Server thread/INFO]: Done"))
 	{
 		qDebug() << "minecraft Started !!" ;
 		this->playerList.clear() ;
@@ -135,19 +147,19 @@ void MinecraftServer::minecraftReadyRead()
 		this->minecraftStarted = true ;
 	}
 
-	else if (string.contains("[Server thread/INFO]: <"))
+	else if (command.contains("[Server thread/INFO]: <"))
 	{
 		
 		
-		int startPseudo = string.indexOf('<') + 1;
-		int endPseudo = string.indexOf('>');
+		int startPseudo = command.indexOf('<') + 1;
+		int endPseudo = command.indexOf('>');
 		int sizePseudo = endPseudo - startPseudo ;
 
-		if (string.count() > (endPseudo+1))
+		if (command.count() > (endPseudo+1))
 		{
 
-			QString pseudo = string.mid(startPseudo, sizePseudo) ;
-			QString pmsg   = string.mid(endPseudo+1) ;
+			QString pseudo = command.mid(startPseudo, sizePseudo) ;
+			QString pmsg   = command.mid(endPseudo+1) ;
 
 			QString msgModel = "**%1** :%2";
 
@@ -158,16 +170,16 @@ void MinecraftServer::minecraftReadyRead()
 		}
 
 	}
-	else if (string.contains("joined the game"))
+	else if (command.contains("joined the game"))
 	{
-		int endPseudo = string.indexOf("joined") - 1;
-		int startPseudo = string.lastIndexOf("INFO]:", endPseudo) + 6;
+		int endPseudo = command.indexOf("joined") - 1;
+		int startPseudo = command.lastIndexOf("INFO]:", endPseudo) + 6;
 		int sizePseudo = endPseudo - startPseudo - 1 ;
 
-		if (string.count() > (startPseudo+1+sizePseudo))
+		if (command.count() > (startPseudo+1+sizePseudo))
 		{
 
-			QString pseudo = string.mid(startPseudo+1, sizePseudo) ;
+			QString pseudo = command.mid(startPseudo+1, sizePseudo) ;
 
 			this->playerList.append(pseudo) ;
 
@@ -184,15 +196,15 @@ void MinecraftServer::minecraftReadyRead()
 			qDebug() << "Erreur de taille pour la connection" ;
 		}
 	}
-	else if (string.contains("left the game"))
+	else if (command.contains("left the game"))
 	{
-		int endPseudo = string.indexOf("left") - 1;
-		int startPseudo = string.lastIndexOf("INFO]:", endPseudo) + 6;
+		int endPseudo = command.indexOf("left") - 1;
+		int startPseudo = command.lastIndexOf("INFO]:", endPseudo) + 6;
 		int sizePseudo = endPseudo - startPseudo - 1 ;
 
-		if (string.count() > (startPseudo+1+sizePseudo))
+		if (command.count() > (startPseudo+1+sizePseudo))
 		{
-			QString pseudo = string.mid(startPseudo+1, sizePseudo) ;
+			QString pseudo = command.mid(startPseudo+1, sizePseudo) ;
 
 			this->playerList.removeAll(pseudo) ;
 
@@ -210,7 +222,6 @@ void MinecraftServer::minecraftReadyRead()
 		}
 
 	}
-
 }
 
 void MinecraftServer::minecraftWrite(QString cmd)
@@ -331,8 +342,6 @@ void MinecraftServer::run()
 		}
 
 		QString string = command ;
-		
-		qDebug() << i << ") command : " << string ;
 
 		if (string.startsWith("!"))
 		{

@@ -44,6 +44,8 @@ class MinecraftServer : public QThread
 
 		void stopDelay() ;
 
+		void decodeMinecraftConsole(QString command) ;
+
 		QProcess * minecraftProcess ;
 
 		bool reboot = true ;
